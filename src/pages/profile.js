@@ -1,4 +1,4 @@
-import { Grid, Typography } from '@material-ui/core';
+import { Button, Grid, Typography } from '@material-ui/core';
 import { AccountCircleOutlined } from '@material-ui/icons';
 import React, { Component } from 'react'
 import { Query } from 'react-apollo';
@@ -18,7 +18,6 @@ export const Profile = (props, classes) => {
                 if (error) {
                     return <Error error={error} />
                 }
-                console.log(data)
                 return <Grid container style={{ display: 'flex' }}>
                     <AccountCircleOutlined color='primary' />
                     <Grid item>
@@ -32,6 +31,9 @@ export const Profile = (props, classes) => {
                     {data.user.musicSet.map((track) => {
                         return <Track track={track} />
                     })}
+                    <Button class='btn btn-danger'>
+                        Signout
+                    </Button>
                 </Grid>
             }}
         </Query >

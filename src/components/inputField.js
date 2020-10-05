@@ -1,17 +1,16 @@
-import { Card, Checkbox, Grid, Input, Paper, Radio, TextField, Typography } from '@material-ui/core';
-import React, { Component, useContext, useState } from 'react'
-import SearchBar from '../tracks/searchBar';
-import Track from '../tracks/readTrack';
-import CreateTrack from '../tracks/createTrack';
-import { gql, useQuery } from '@apollo/client';
-import { Query } from "react-apollo";
-import { GET_TRACKS_QUERY } from '../App';
-import Error from '../util/Error';
-import { default_values, sections_name } from '../default_value';
+import { TextField, Typography } from '@material-ui/core';
+import React, { useState } from 'react'
+import { useReactiveVar } from '@apollo/client';
+import { currentSection, valueVar } from '../util/cache';
+import { sections_name } from '../default_value';
+
 
 let InputField = (props) => {
     const [name, defaultValue] = props.value;
-    const [input, setinput] = useState(defaultValue)
+    const secName = useReactiveVar(currentSection)
+    const indexSec = sections_name.indexOf(secName);
+    const valVarRes = useReactiveVar(valueVar)[indexSec];
+    const input = props.getValue(valVarRes);
     const [error, seterror] = useState({})
 
     const handleChange = (event, id) => {
@@ -22,20 +21,20 @@ let InputField = (props) => {
             delete newError[id]
             seterror(newError)
         }
-        setinput(event.target.value);
+        props.changeValue(event.target.value);
         // if (this.state.errors.length > 0) {
         //     this.setState({ errors: '' })
         // }
     }
 
-    return <div class="container" name={name} style={{ textAlign: 'center' }}>
+    return <div className="container" name={name} style={{ textAlign: 'center' }}>
         <div className='row'>
-            <div class="col-3">
+            <div className="col-3">
                 <Typography variant='body1'>
                     {name}
                 </Typography>
             </div>
-            <div class="col-3">
+            <div className="col-3">
                 <TextField
                     value={input}
                     error={Object.keys(error).length > 0}
@@ -49,7 +48,7 @@ let InputField = (props) => {
 }
 let InputFields = (props) => {
     return Object.entries(props.values).map((value) => {
-        return <InputField value={value} key={value.name} />
+        return <InputField value={value} changeValue={props.changeValue(value[0])} getValue={props.getValue(value[0])} key={value[0]} />
     })
 }
 

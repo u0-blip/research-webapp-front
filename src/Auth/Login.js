@@ -5,7 +5,9 @@ import { Mutation } from 'react-apollo';
 import Error from '../util/Error';
 import { Link } from 'react-router-dom';
 
-const Login = ({ classes }) => {
+import { IS_LOGGED_IN_QUERY } from '../util/cache';
+
+const Login = ({ history, classes }) => {
     const [username, setusername] = useState("");
     const [password, setPassword] = useState("");
 
@@ -14,9 +16,10 @@ const Login = ({ classes }) => {
         try {
             const res = await tokenAuth();
             localStorage.setItem('authToken', res.data.tokenAuth.token)
-            client.writeDate({ data: { isLoggedIn: true } });
+            client.writeQuery({ query: IS_LOGGED_IN_QUERY, data: { isLoggedIn: true } });
+            history.push('/')
         } catch (e) {
-            return
+            console.log(e)
         }
     }
 

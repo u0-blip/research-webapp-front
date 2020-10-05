@@ -19,10 +19,10 @@ import LibraryMusicIcon from "@material-ui/icons/LibraryMusic";
 
 import { GET_TRACKS_QUERY } from '../App';
 import Error from '../util/Error';
-import { StorageOutlined } from "@material-ui/icons";
+import { GetApp, StorageOutlined } from "@material-ui/icons";
 
 
-const CreateTrack = ({ classes }) => {
+const DownloadConfig = ({ classes }) => {
     const [open, setOpen] = useState(false);
     const [title, setTitle] = useState("");
     const [hashtag, setHashtag] = useState("");
@@ -71,7 +71,7 @@ const CreateTrack = ({ classes }) => {
         <>
             {/* create track button */}
             <Button onClick={() => setOpen(true)} variant="contained" className={classes.fab} color="secondary">
-                {open ? <ClearIcon /> : <AddIcon />}
+                <GetApp />
             </Button>
 
             {/* create track DIALOG */}
@@ -134,7 +134,7 @@ const CreateTrack = ({ classes }) => {
                                                 component="span" className={classes.button}
                                             >
                                                 Max size 15Mb
-                                                <StorageOutlined className={classes.icon} />
+                                                <GetApp className={classes.icon} />
                                             </Button>
                                             {file && file.name}
                                             <FormHelperText>{fileError}</FormHelperText>
@@ -220,9 +220,9 @@ const styles = theme => ({
     fab: {
         position: "fixed",
         bottom: theme.spacing(2),
-        right: theme.spacing(1),
+        right: theme.spacing(10),
         zIndex: "200"
     }
 });
 
-export default withStyles(styles)(CreateTrack);
+export default withStyles(styles)(DownloadConfig);

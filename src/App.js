@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import './App.css';
 import { Route, BrowserRouter as Router, Switch } from 'react-router-dom';
-import ConfigManager from './pages/configManager';
-import ApolloClient, { gql } from 'apollo-boost';
-import { ApolloProvider, Query } from 'react-apollo';
+import { ApolloClient, gql } from '@apollo/client';
+import { ApolloProvider } from 'react-apollo';
 import Navbar from './util/Navbar';
 
 
@@ -12,15 +11,17 @@ import Login from './Auth/Login';
 import Signup from './Auth/Signup';
 import Profile from './pages/profile';
 import secContext from './util/secContext';
-import Result from './pages/result';
 import Home from './pages/home';
 import "bootstrap/dist/css/bootstrap.min.css";
 import ResultsExplorer from './pages/resultsExplorer';
+import { default_values } from './default_value';
+import { cache, currentSection } from './util/cache';
 
 Axios.defaults.baseURL = 'http://127.0.0.1:8000';
 
-const client = new ApolloClient({
+export const client = new ApolloClient({
   uri: Axios.defaults.baseURL + '/graphql/',
+  cache,
   fetchOptions: {
     credentials: "include"
   },
@@ -32,24 +33,21 @@ const client = new ApolloClient({
       }
     })
   },
-  clientState: {
-    defaults: {
-      isLoggedIn: !!localStorage.getItem('authToken')
-    }
-  }
 });
 
-
 function App() {
-  const [name, changeSecName] = useState('Source')
 
   // State also contains the updater function so it will
   // be passed down into the context provider
+  const changeSecName = (name) => {
+    currentSection(name)
+  }
+  console.log(currentSection())
 
   return (
 
     <ApolloProvider client={client}>
-      <secContext.Provider value={{ name, changeSecName }}>
+      <secContext.Provider value={{ name: currentSection(), changeSecName }}>
         <Router>
           <Navbar />
           <Switch>
@@ -69,53 +67,49 @@ function App() {
 
 export const GET_TRACKS_QUERY = gql`
   query getTracksQuery {
-    music {
+      music {
       id
       title
       description
       hashtag
       url
       owner {
-        id
+      id
         username
-      }
     }
-  }
+    }
+}
 
 `;
 
 
-const IS_LOGGED_IN_QUERY = gql`
-    query {
-        isLoggedIn @client
-    }
-`;
+
 
 
 export const GET_SELF_QUERY = gql`
-  {
-    userself {
-      id
-      username
-      email
-    }
+{
+  userself {
+    id
+    username
+    email
   }
+}
 `;
 
 export const GET_USER_QUERY = gql`
-  query ($id:Int!){
-    user (id: $id){
+query($id: Int!){
+  user(id: $id){
+    id
+    username
+    email
+    dateJoined
+    musicSet{
       id
-      username
-      email
-      dateJoined
-      musicSet{
-        id
-        title
-        url
-      }
+      title
+      url
     }
   }
+}
 `;
 
 

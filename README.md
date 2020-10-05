@@ -1,68 +1,138 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+I encountered an interesting problem where the react script cannot access Bokehjs, which is included from an external script tag.
+This is a common pattern problem because not every js library is in npm.
+Firstly, I hypothesis the problem being the script is loaded after the react script. This turns out to be true. As I moved the script loading into component did mount, the console.log(window) is able to show Bokeh, however, window.Bokeh is still showing nothing. 
+I found on stackoverflow the problem pattern is similar to 
+ <div id="react"></div>
+ <script type="text/javascript" src="/static/bundles/main-hash.js" ></script>
+ <script>
+   window.userData = {a: 1, b:2}
+ </script>
+ where console.log(window, window.userData) returns Window undefined
+The accepted solution is moving the script before the react component. 
+Another hypothesis arised is that the console log is a reference to window object, which is updated on view. possibly the bokeh object is just a reference in the window object for the time being. It has to go through the initializaton process first. 
+So the problem becomes how do I issue a callback when the Bokeh script is actually loaded and ready to pounce. Following the lead of this answer https://stackoverflow.com/questions/7718935/load-scripts-asynchronously#7719185, I was able to successfully implement the solution. 
+<script>
+    function loadScript(url, callback = null) {
+        let r = false;
+        const script = document.createElement("script");
+        script.src = url;
+        script.async = false;
+        script.onload = script.onreadystatechange = function () {
+            if (!r) {
+                r = true;
+                callback && callback();
+            }
+        };
+        document.body.appendChild(script);
+    }
+</script>
+the important points lies in the callback function.
+After putting the plotting logic within the callback function, the script is able to function approprately.
 
-## Available Scripts
+lesson learnt,
+1. the window object is just a reference in console log and doesn't reflect the true state of the object at the time stamp.
+2. the append child script and the actual loading and execution of the script is done asynchronously. 
 
-In the project directory, you can run:
 
-### `npm start`
+after a lot of struggle with Bokeh plot, I discovered mpld3, a python library that can generate interactive web plot. Which means all the plotting facility that I have developed in Python can be used with no further modification. This is a huge plus. I would say I wasted those time on the Bokeh plot because even though it's not useful in this instance, it is still useful knowledge. 
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+After turning on the backend server for user authentication, interesting error arised for CORS policy. This error is strage because most of the code is from the previous implementation which worked and this error happens from time to time sparatically following no discernable pattern. 
+by changing to 
+<script>
+    CORS_ORIGIN_WHITELIST = (
+    'http://localhost:3000',
+    'http://127.0.0.1:3000'
+)
+</script>
+fixed the problem.
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+lessons learnt:
+1. localhost != 127.0.0.1
+2. encoding of string sometimes can cause unfortuantable things to happen.
 
-### `npm test`
 
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
 
-### `npm run build`
+it keeps saying it need a valid parsed gql document.
+<script>
+    client.writeQuery({ IS_LOGGED_IN_QUERY, data: { isLoggedIn: true } });
+</script>
+turns out, I forgot the query key for the write query dictionary.
 
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
 
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
+working with cache of Apollo
+https://www.apollographql.com/docs/react/caching/cache-interaction/
+<script>
+const { todo } = client.readQuery({
+  query: gql`
+    query ReadTodo($id: Int!) {
+      todo(id: $id) {
+        id
+        text
+        completed
+      }
+    }
+  `,
+  variables: {
+    id: 5,
+  },
+});
+</script>
+like normal query, however, the query is not made to the server. 
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+<script>
+const todo = client.readFragment({
+  id: 'Todo:5', // The value of the to-do item's unique identifier
+  fragment: gql`
+    fragment MyTodo on Todo {
+      id
+      text
+      completed
+    }
+  `,
+});
+</script>
+the fragment is a reusable piece of query that defines some fields.
 
-### `npm run eject`
+<script>
+const query = gql`
+  query MyTodoAppQuery {
+    todos {
+      id
+      text
+      completed
+    }
+  }
+`;
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+// Get the current to-do list
+const data = client.readQuery({ query });
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+// Create a new to-do item
+const myNewTodo = {
+  id: '6',
+  text: 'Start using Apollo Client.',
+  completed: false,
+  __typename: 'Todo',
+};
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+// Write back to the to-do list, appending the new item
+client.writeQuery({
+  query,
+  data: {
+    todos: [...data.todos, myNewTodo],
+  },
+});
+</script>
+unlike writeQuery and writeFragment, cache modify completely change the state of the object without merging.
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
-
-### Analyzing the Bundle Size
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
-
-### Making a Progressive Web App
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
-
-### Advanced Configuration
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
-
-### Deployment
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
-
-### `npm run build` fails to minify
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+<script>
+cache.modify({
+  id: cache.identify(myObject),
+  fields: {
+    name(cachedName) {
+      return cachedName.toUpperCase();
+    },
+  },
+  /* broadcast: false // Include this to prevent automatic query refresh */
+});
+</script>

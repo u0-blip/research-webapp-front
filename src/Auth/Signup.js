@@ -1,9 +1,11 @@
 import React, { Component, useState } from 'react'
 import { gql } from 'apollo-boost';
-import { Button, FormControl, Input, InputLabel, Paper, Typography, withStyles } from '@material-ui/core';
+import { Button, FormControl, Grid, Input, InputLabel, Paper, Typography, withStyles } from '@material-ui/core';
 import { Mutation } from 'react-apollo';
 import Error from '../util/Error';
 import { Link } from 'react-router-dom';
+
+import { IS_LOGGED_IN_QUERY } from '../util/cache';
 
 const Signup = ({ classes }) => {
     const [username, setUsername] = useState("");
@@ -15,15 +17,16 @@ const Signup = ({ classes }) => {
         try {
             const res = await tokenAuth();
             localStorage.setItem('authToken', res.data.tokenAuth.token)
-            client.writeDate({ data: { isLoggedIn: true } });
+            client.writeQuery({ query: IS_LOGGED_IN_QUERY, data: { isLoggedIn: true } });
+            this.props.history.push('/')
         } catch (e) {
             return
         }
     }
 
     return (
-        <>
-            <Paper>
+        <Grid container direction='row' style={{ justifyContent: 'center' }}>
+            <Grid item xs={8} spacing={2}>
                 <Mutation
                     mutation={SIGNUP_MUTATION}
                     variables={{ username, email, password }}
@@ -75,17 +78,17 @@ const Signup = ({ classes }) => {
                         )
                     }}
                 </Mutation>
-            </Paper>
-            <Link to='/login'>
-                <Typography
-                    className={classes.account_trans}
-                    variant="body2"
-                    fullWidth
-                >
-                    Already have a account? <a> Login </a>
-                </Typography>
-            </Link>
-        </>
+                <Link to='/login'>
+                    <Typography
+                        className={classes.account_trans}
+                        variant="body2"
+                        fullWidth
+                    >
+                        Already have a account? <a> Login </a>
+                    </Typography>
+                </Link>
+            </Grid>
+        </Grid>
     )
 }
 
