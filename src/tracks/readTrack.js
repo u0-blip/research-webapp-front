@@ -1,4 +1,4 @@
-import { Box, Card, Grid, Typography } from '@material-ui/core'
+import { Box, Card, Grid, Radio, Typography } from '@material-ui/core'
 import { ArrowDropDown, ThumbUp } from '@material-ui/icons'
 import Axios from 'axios';
 import React, { Component } from 'react'
@@ -9,35 +9,81 @@ export class Track extends Component {
     render() {
         const track = this.props.track;
         return (
-            <Grid item xs={10} style={{ margin: 'auto' }}>
+            <Grid item xs={12} style={{ margin: 'auto' }}>
                 <Card>
-                    <Grid container justify='space-evenly' style={{ alignItems: 'center' }}>
-                        <Grid item xs={1}>
-                            <ThumbUp />
+                    <Grid container justify='space-evenly' style={{ alignItems: 'center', textAlign: 'center' }}>
+                        <Grid item xs={2}>
+                            <Radio
+                                checked={this.props.configUsed === track.id}
+                                onChange={() => this.props.setconfigUsed(track.id)}
+                            />
 
                         </Grid>
                         <Grid item xs={2}>
-                            <Grid container>
-                                <Grid item xs={12}>
-                                    <Typography variant='body1'>
-                                        {track.name}
-                                    </Typography>
-                                </Grid>
-                                <Grid item xs={12}>
-                                    <Typography variant='caption'>
-                                        {track.user}
-                                    </Typography>
-                                </Grid>
-                            </Grid>
+                            <Typography variant='body1'>
+                                {track.id}
+                            </Typography>
                         </Grid>
-                        <Grid item>
-                            <Box my='10px'>
-                                <ReactPlayer url={Axios.defaults.baseURL + '/music/' + track.url} height="30px" width="500px" controls={true} />
+                        <Grid item xs={2}>
+                            <Typography variant='body1'>
+                                {track.title}
+                            </Typography>
+                        </Grid>
+                        <Grid item xs={2}>
+                            <Typography variant='caption'>
+                                {track.description}
+                            </Typography>
+                        </Grid>
 
-                            </Box>
+                        <Grid item xs={2}>
+                            <DeleteTrack track={track} />
+
                         </Grid>
-                        <DeleteTrack track={track} />
-                        <ArrowDropDown />
+
+
+
+                    </Grid>
+                </Card>
+            </Grid>
+        )
+    }
+}
+
+export class TrackHead extends Component {
+    render() {
+        return (
+            <Grid item xs={12} style={{ margin: 'auto' }}>
+                <Card>
+                    <Grid container justify='space-evenly' style={{ alignItems: 'center', textAlign: 'center' }}>
+                        <Grid item xs={2}>
+                            <Typography variant='body1'>
+                                Select
+                            </Typography>
+                        </Grid>
+
+                        <Grid item xs={2}>
+                            <Typography variant='body1'>
+                                ID
+                            </Typography>
+                        </Grid>
+                        <Grid item xs={2}>
+                            <Typography variant='body1'>
+                                Title
+                            </Typography>
+                        </Grid>
+                        <Grid item xs={2}>
+                            <Typography variant='body1'>
+                                Description
+                            </Typography>
+                        </Grid>
+
+                        <Grid item xs={2}>
+                            <Typography variant='body1'>
+                                Delete
+                            </Typography>
+                        </Grid>
+
+
                     </Grid>
                 </Card>
             </Grid>

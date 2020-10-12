@@ -16,6 +16,7 @@ import CircularProgress from "@material-ui/core/CircularProgress";
 import AddIcon from "@material-ui/icons/Add";
 import ClearIcon from "@material-ui/icons/Clear";
 import LibraryMusicIcon from "@material-ui/icons/LibraryMusic";
+import { AppBar, Grid, Tooltip } from "@material-ui/core";
 
 import { GET_TRACKS_QUERY } from '../App';
 import Error from '../util/Error';
@@ -70,10 +71,11 @@ const DownloadConfig = ({ classes }) => {
     return (
         <>
             {/* create track button */}
-            <Button onClick={() => setOpen(true)} variant="contained" className={classes.fab} color="secondary">
-                <GetApp />
-            </Button>
-
+            <Tooltip title="Download config and result" placement="top">
+                <Button onClick={() => setOpen(true)} variant="contained" className={classes.fab} color="secondary">
+                    <GetApp />
+                </Button>
+            </Tooltip>
             {/* create track DIALOG */}
             <Mutation
                 mutation={CREATE_TRACK_MUTATION}
@@ -94,54 +96,8 @@ const DownloadConfig = ({ classes }) => {
                     return (
                         <Dialog open={open} className={classes.dialog}>
                             <form name='form' onSubmit={event => handleSubmit(event, createTrack)}>
-                                <DialogTitle>Upload configuration</DialogTitle>
+                                <DialogTitle>Download configuration</DialogTitle>
                                 <DialogContent>
-                                    <DialogContentText>
-                                        Title
-                                    </DialogContentText>
-                                    <FormControl fullWidth>
-                                        <TextField
-                                            label="Title"
-                                            placeholder="Title"
-                                            onChange={event => setTitle(event.target.value)}
-                                            value={title}
-                                            className={classes.textField}
-                                        />
-                                    </FormControl>
-
-                                    <FormControl fullWidth>
-                                        <TextField
-                                            rows="3"
-                                            label="Description"
-                                            placeholder="Description"
-                                            onChange={event => setDescription(event.target.value)}
-                                            value={description}
-                                            className={classes.textField}
-                                        />
-                                    </FormControl>
-
-                                    <FormControl error={Boolean(fileError)}>
-                                        <input
-                                            id="audio"
-                                            required
-                                            type="file"
-                                            accept="audio"
-                                            className={classes.input}
-                                            onChange={handleAudioChange}
-                                        />
-                                        <label htmlFor="audio">
-                                            <Button variant="outlined" color={file ? "secondary" : "inherit"}
-                                                component="span" className={classes.button}
-                                            >
-                                                Max size 15Mb
-                                                <GetApp className={classes.icon} />
-                                            </Button>
-                                            {file && file.name}
-                                            <FormHelperText>{fileError}</FormHelperText>
-                                        </label>
-                                    </FormControl>
-                                </DialogContent>
-                                <DialogActions>
                                     <Button
                                         disabled={submitting}
                                         onClick={() => setOpen(false)}
@@ -150,17 +106,21 @@ const DownloadConfig = ({ classes }) => {
                                         cancel
                   </Button>
                                     <Button
-                                        disabled={
-                                            submitting || !title.trim() || !description.trim() || !file
-                                        }
+                                        disabled={submitting}
+                                        onClick={() => setOpen(false)}
+                                        className={classes.cancel}
+                                    >
+                                        Download Config Locally
+                  </Button>
+                                    <Button
                                         type="cancel"
                                         className={classes.save}
                                     >
                                         {submitting ? (
                                             <CircularProgress className={classes.save} size={24} />
-                                        ) : ("submit")}
+                                        ) : ("Save Config Online")}
                                     </Button>
-                                </DialogActions>
+                                </DialogContent>
                             </form>
                         </Dialog>
                     )

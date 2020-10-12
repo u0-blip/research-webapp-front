@@ -9,7 +9,6 @@ let RangeField = (props) => {
     const secName = useReactiveVar(currentSection)
     const indexSec = sections_name.indexOf(secName);
     const valVarRes = useReactiveVar(valueVar)[indexSec];
-    console.log(valVarRes)
 
     const input = props.getValue(valVarRes);
 

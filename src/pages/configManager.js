@@ -1,14 +1,10 @@
-import { Card, Checkbox, Grid, Input, Paper, Radio, Typography } from '@material-ui/core';
-import React, { Component, useContext, useState } from 'react'
+import { Card, Checkbox, Grid, Input, Paper, Radio, Tooltip, Typography } from '@material-ui/core';
+import React from 'react'
 import SearchBar from '../tracks/searchBar';
-import Track from '../tracks/readTrack';
 import CreateTrack from '../tracks/createTrack';
 import DownloadConfig from '../tracks/download';
 import ResetConfig from '../tracks/reset';
-import { gql, useQuery, useReactiveVar } from '@apollo/client';
-import { Query } from "react-apollo";
-import { GET_TRACKS_QUERY } from '../App';
-import Error from '../util/Error';
+import { useReactiveVar } from '@apollo/client';
 import { default_values, sections_name } from '../default_value';
 import "bootstrap/dist/css/bootstrap.min.css";
 
@@ -21,7 +17,7 @@ import { currentSection, valueVar } from '../util/cache';
 
 
 const ConfigManager = ({ classes, props }) => {
-    const secName = useReactiveVar(currentSection)
+    const secName = useReactiveVar(currentSection);
     const indexSec = sections_name.indexOf(secName);
     let sec = default_values[indexSec];
 

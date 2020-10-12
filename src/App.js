@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import './App.css';
 import { Route, BrowserRouter as Router, Switch } from 'react-router-dom';
-import { ApolloClient, gql } from '@apollo/client';
+import { ApolloClient, createHttpLink, gql } from '@apollo/client';
+import { setContext } from '@apollo/client/link/context';
+
 import { ApolloProvider } from 'react-apollo';
 import Navbar from './util/Navbar';
 
@@ -14,25 +16,32 @@ import secContext from './util/secContext';
 import Home from './pages/home';
 import "bootstrap/dist/css/bootstrap.min.css";
 import ResultsExplorer from './pages/resultsExplorer';
-import { default_values } from './default_value';
 import { cache, currentSection } from './util/cache';
+import Structure from './pages/stucture';
 
 Axios.defaults.baseURL = 'http://127.0.0.1:8000';
 
-export const client = new ApolloClient({
+const httpLink = createHttpLink({
   uri: Axios.defaults.baseURL + '/graphql/',
+});
+const authLink = setContext((_, { headers }) => {
+  // get the authentication token from local storage if it exists
+  const token = localStorage.getItem('authToken') || ""
+  // return the headers to the context so httpLink can read them
+  return {
+    headers: {
+      ...headers,
+      Authorization: `JWT ${token}`,
+    }
+  }
+});
+
+export const client = new ApolloClient({
   cache,
   fetchOptions: {
     credentials: "include"
   },
-  request: operation => {
-    const token = localStorage.getItem('authToken') || ""
-    operation.setContext({
-      headers: {
-        Authorization: `JWT ${token}`
-      }
-    })
-  },
+  link: authLink.concat(httpLink),
 });
 
 function App() {
@@ -42,7 +51,6 @@ function App() {
   const changeSecName = (name) => {
     currentSection(name)
   }
-  console.log(currentSection())
 
   return (
 
@@ -54,6 +62,7 @@ function App() {
             <Route exact path='/' component={Home} />
             <Route exact path='/nav/:sec' component={Home} />
             <Route exact path='/resultsexplorer' component={ResultsExplorer} />
+            <Route exact path='/structure' component={Structure} />
             <Route exact path='/login' component={Login} />
             <Route exact path='/signup' component={Signup} />
             <Route path='/profile/:id' component={Profile} />
@@ -67,7 +76,7 @@ function App() {
 
 export const GET_TRACKS_QUERY = gql`
   query getTracksQuery {
-      music {
+      track {
       id
       title
       description
