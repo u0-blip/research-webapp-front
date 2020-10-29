@@ -21,6 +21,22 @@ import { AppBar, Grid, Tooltip } from "@material-ui/core";
 import { GET_TRACKS_QUERY } from '../App';
 import Error from '../util/Error';
 import { GetApp, StorageOutlined } from "@material-ui/icons";
+import { useMutation } from "@apollo/react-hooks";
+import { valueVar } from "../util/cache";
+
+
+function download(filename, text) {
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    element.setAttribute('download', filename);
+
+    element.style.display = 'none';
+    document.body.appendChild(element);
+
+    element.click();
+
+    document.body.removeChild(element);
+}
 
 
 const DownloadConfig = ({ classes }) => {
@@ -32,21 +48,13 @@ const DownloadConfig = ({ classes }) => {
     const [submitting, setSubmitting] = useState(false);
     const [fileError, setFileError] = useState("");
 
-    const handleAudioChange = event => {
-        const selectedFile = event.target.files[0]
-        const fileSizeLimit = 15000000;
-        if (selectedFile && selectedFile.size > fileSizeLimit) {
-            setFileError(`${selectedFile.name}: the file is limited 15Mb`)
-        } else {
-            setFile(selectedFile);
-            setFileError('');
-        }
-    }
 
-    const handleAudioUpload = async () => {
+    const handleAudioUpload = async (f) => {
         try {
             const data = new FormData();
+            let file = new File([f], `${title}.txt`, { type: "text/plain" });
             data.append('file', file);
+            console.log(data, file)
             const res = await axios.post(axios.defaults.baseURL + "/music/", data);
             return res.data.url;
         } catch (err) {
@@ -61,11 +69,30 @@ const DownloadConfig = ({ classes }) => {
         cache.writeQuery({ query: GET_TRACKS_QUERY, data: { music } })
     }
 
-    const handleSubmit = async (event, createTrack) => {
+    const [createTrack, { loading, error }] = useMutation(CREATE_TRACK_MUTATION);
+
+    const handleChange = (event) => {
+        event.preventDefault()
+        setFileError('')
+        setTitle(event.target.value);
+    }
+
+    const handleSubmit = async (event, f) => {
         event.preventDefault();
+        if (title === '') {
+            setFileError('cannot be empty')
+            return
+        }
         setSubmitting(true);
-        const uploadedUrl = await handleAudioUpload();
+        const uploadedUrl = await handleAudioUpload(f);
         createTrack({ variables: { title, hashtag, description, url: uploadedUrl } });
+
+        setSubmitting(false)
+        setOpen(false)
+        setTitle("")
+        setDescription("")
+        setHashtag("")
+        setFile("")
     };
 
     return (
@@ -76,56 +103,72 @@ const DownloadConfig = ({ classes }) => {
                     <GetApp />
                 </Button>
             </Tooltip>
-            {/* create track DIALOG */}
-            <Mutation
-                mutation={CREATE_TRACK_MUTATION}
-                onCompleted={data => {
-                    setSubmitting(false)
-                    setOpen(false)
-                    setTitle("")
-                    setDescription("")
-                    setHashtag("")
-                    setFile("")
-                }}
-                update={handleUpdateCache}
-            /* refetchQueries={() => [{ query: GET_TRACKS_QUERY }]} */
-            >
-                {(createTrack, { loading, error }) => {
-                    if (error) return <Error error={error} />;
+            <Dialog open={open} className={classes.dialog}>
+                <form name='form'>
+                    <DialogTitle>Download configuration</DialogTitle>
+                    <DialogContent>
+                        <div className='container' style={{ width: '28rem' }}>
+                            <div className='row' style={{ display: 'flex', alignItems: 'flex-end' }}>
+                                <div className='col-6'>
 
-                    return (
-                        <Dialog open={open} className={classes.dialog}>
-                            <form name='form' onSubmit={event => handleSubmit(event, createTrack)}>
-                                <DialogTitle>Download configuration</DialogTitle>
-                                <DialogContent>
+                                    <TextField
+                                        value={title}
+                                        label='filename'
+                                        error={fileError !== ''}
+                                        helperText={fileError}
+                                        onChange={(event) => handleChange(event)}
+                                    />
+                                </div>
+                                <div className='col-6'>
                                     <Button
-                                        disabled={submitting}
-                                        onClick={() => setOpen(false)}
-                                        className={classes.cancel}
-                                    >
-                                        cancel
-                  </Button>
-                                    <Button
-                                        disabled={submitting}
-                                        onClick={() => setOpen(false)}
-                                        className={classes.cancel}
-                                    >
-                                        Download Config Locally
-                  </Button>
-                                    <Button
-                                        type="cancel"
+                                        style={{ width: '12rem', height: '3rem' }}
+                                        onClick={(event) => {
+                                            setFile(JSON.stringify(valueVar()))
+                                            handleSubmit(event, JSON.stringify(valueVar()))
+                                            if (fileError !== '') setOpen(false)
+                                        }}
                                         className={classes.save}
                                     >
                                         {submitting ? (
                                             <CircularProgress className={classes.save} size={24} />
                                         ) : ("Save Config Online")}
                                     </Button>
-                                </DialogContent>
-                            </form>
-                        </Dialog>
-                    )
-                }}
-            </Mutation>
+                                </div>
+                            </div>
+                            <div className='row' style={{ display: 'flex', alignItems: 'flex-end' }}>
+                                <div className='col-6'>
+                                </div>
+                                <div className='col-6'>
+                                    <Button
+                                        style={{ width: '12rem', height: '3rem' }}
+                                        disabled={submitting}
+                                        onClick={() => {
+                                            setOpen(false)
+                                            if (fileError !== '') setOpen(false)
+                                            download(title, JSON.stringify(valueVar()))
+                                        }}
+                                        className={classes.save}
+                                    >
+                                        Download Config Locally
+                  </Button>
+                                </div>
+                            </div>
+                            <div className='row'>
+                                <div className='col-12'>
+                                    <Button
+                                        style={{ margin: 'auto', display: 'flex' }}
+                                        disabled={submitting}
+                                        onClick={() => setOpen(false)}
+                                        className={classes.cancel}
+                                    >
+                                        cancel
+                  </Button>
+                                </div>
+                            </div>
+                        </div>
+                    </DialogContent>
+                </form>
+            </Dialog>
 
         </>
     );

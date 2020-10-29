@@ -18,51 +18,14 @@ import { AppBar, Grid, Tooltip } from "@material-ui/core";
 import { GET_TRACKS_QUERY } from '../App';
 import Error from '../util/Error';
 import { Refresh, StorageOutlined } from "@material-ui/icons";
+import { valueVar } from "../util/cache";
+import { default_values } from "../default_value";
 
 
 const ResetConfig = ({ classes }) => {
     const [open, setOpen] = useState(false);
-    const [title, setTitle] = useState("");
-    const [hashtag, setHashtag] = useState("");
-    const [description, setDescription] = useState("");
-    const [file, setFile] = useState("");
     const [submitting, setSubmitting] = useState(false);
-    const [fileError, setFileError] = useState("");
 
-    const handleAudioChange = event => {
-        const selectedFile = event.target.files[0]
-        const fileSizeLimit = 15000000;
-        if (selectedFile && selectedFile.size > fileSizeLimit) {
-            setFileError(`${selectedFile.name}: the file is limited 15Mb`)
-        } else {
-            setFile(selectedFile);
-            setFileError('');
-        }
-    }
-
-    const handleAudioUpload = async () => {
-        try {
-            const data = new FormData();
-            data.append('file', file);
-            const res = await axios.post(axios.defaults.baseURL + "/music/", data);
-            return res.data.url;
-        } catch (err) {
-            console.error('Cannot upload file', err);
-            setSubmitting(false);
-        }
-    };
-
-    const handleUpdateCache = (cache, { data: { createTrack } }) => {
-        const data = cache.readQuery({ query: GET_TRACKS_QUERY })
-        const music = data.music.concat(createTrack.music)
-        cache.writeQuery({ query: GET_TRACKS_QUERY, data: { music } })
-    }
-
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-        setSubmitting(true);
-        const uploadedUrl = await handleAudioUpload();
-    };
 
     return (
         <>
@@ -74,7 +37,7 @@ const ResetConfig = ({ classes }) => {
             </Tooltip>
 
             <Dialog open={open} className={classes.dialog}>
-                <form name='form' onSubmit={event => handleSubmit(event)}>
+                <form name='form' >
                     <DialogTitle>Are you sure you want to reset the configuration</DialogTitle>
                     <DialogActions>
                         <Button
@@ -85,11 +48,11 @@ const ResetConfig = ({ classes }) => {
                             cancel
                   </Button>
                         <Button
-                            disabled={
-                                submitting || !title.trim() || !description.trim() || !file
-                            }
-                            type="cancel"
                             className={classes.save}
+                            onClick={() => {
+                                valueVar(default_values);
+                                setOpen(false);
+                            }}
                         >
                             {submitting ? (
                                 <CircularProgress className={classes.save} size={24} />
@@ -103,24 +66,6 @@ const ResetConfig = ({ classes }) => {
     );
 };
 
-const CREATE_TRACK_MUTATION = gql`
-  mutation ($title: String!, $description: String!, $hashtag: String!, $url: String!) {
-    createTrack(title: $title, description: $description, hashtag: $hashtag, url: $url) 
-    {
-      track {
-        id
-        title
-        description
-        hashtag
-        url
-        owner {
-          id
-          username
-        }
-      }
-    }
-  }
-`;
 
 const styles = theme => ({
     container: {

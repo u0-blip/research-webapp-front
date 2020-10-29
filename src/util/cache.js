@@ -5,7 +5,7 @@ export const cartItemsVar = makeVar([]);
 export const isLoggedIn = makeVar(!!localStorage.getItem('authToken'));
 export const currentSection = makeVar('Source');
 const default_values_in_store = !!localStorage.getItem('default_config') ? JSON.parse(localStorage.getItem('default_config')) : default_values;
-export const valueVar = makeVar(default_values_in_store);
+export const valueVar = makeVar(JSON.parse(JSON.stringify(default_values_in_store)));
 
 export const cache = new InMemoryCache({
     typePolicies: {
