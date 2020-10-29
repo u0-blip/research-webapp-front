@@ -50,7 +50,8 @@ export const default_values = [
             'fill_factor': [0.5, 0.7, 1],
             'std': [0.1, 0.3, 1],
 
-            'solid_center': [-2, 0, 0],
+            'solid_center': [-0.8, 0, 0],
+            'solid_size': [4, 4, 4],
             'cell_size': [10, 10, 10],
             'rotation': [0, 60, 1]
         },
@@ -89,7 +90,7 @@ export const default_values = [
             'mode': ['normal', ['normal', 'gaussian', 'far_field_transform', 'waveguide']],
         },
         'range': {
-            'size': [0, 10, 0],
+            'size': [0, 8, 0],
             'center': [4, 0, 0],
             'near_flux_loc': [3.5, 0, 0],
             'far_flux_loc': [-4.5, 0, 0],

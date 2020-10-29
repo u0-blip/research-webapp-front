@@ -54,12 +54,9 @@ export function Navbar(props) {
     </Query>
 
     const changeHome = (e, name) => {
-        // e.preventDefault();
-        // history.push(`/nav/${name}`)
         currentSection(name)
     }
 
-    const secName = useReactiveVar(currentSection)
 
     return (
         <AppBar className={classes.root}>
@@ -72,7 +69,10 @@ export function Navbar(props) {
 
                 <Link
                     to={`/`}
-                    onClick={(e) => setexpand('config')}
+                    onClick={(e) => {
+                        setexpand('config')
+                        changeHome(e, 'Visualization')
+                    }}
                     className={clsx(expand === 'config' && classes.active, classes.grow)}>
                     <Typography
                         style={{ margin: 'auto', paddingTop: '1.2rem', paddingBottom: '1.2rem', color: '#f3f0f1' }} variant='body1'

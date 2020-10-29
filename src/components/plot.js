@@ -7,7 +7,7 @@ import Error from '../util/Error';
 export default class Plot extends Component {
     componentDidMount() {
         const iframe = document.getElementById('chart1').contentDocument;
-        Axios.get('/plot')
+        Axios.get(this.props.url)
             .then((plotHtml) => {
                 iframe.write(plotHtml.data)
             })
@@ -18,8 +18,8 @@ export default class Plot extends Component {
     render() {
         return (
             <iframe style={{
-                width: '26rem',
-                height: '27rem'
+                width: this.props.width,
+                height: this.props.height
             }} id='chart1'>
             </iframe>
         )

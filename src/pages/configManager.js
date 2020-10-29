@@ -1,4 +1,4 @@
-import { Card, Checkbox, Grid, Input, Paper, Radio, Tooltip, Typography } from '@material-ui/core';
+import { Paper, Typography } from '@material-ui/core';
 import React from 'react'
 import SearchBar from '../tracks/searchBar';
 import CreateTrack from '../tracks/createTrack';
@@ -35,19 +35,18 @@ const ConfigManager = ({ classes, props }) => {
             <div className='row'>
                 <div className='col-3'>
                     <h5>Param</h5>
-
                 </div>
+
                 <div className='col-3'>
                     <h5>Start</h5>
-
                 </div>
+
                 <div className='col-3'>
                     <h5>End</h5>
-
                 </div>
+
                 <div className='col-3'>
                     <h5>Steps</h5>
-
                 </div>
             </div>
         </div>,
