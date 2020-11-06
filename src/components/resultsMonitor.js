@@ -6,6 +6,13 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import Box from '@material-ui/core/Box';
 import clsx from 'clsx';
 import { Link } from 'react-router-dom';
+import Axios from 'axios';
+import { valueVar } from '../util/cache';
+import { pics } from '../default_value';
+import Error from '../util/Error';
+import { plotDict, rms } from '../util/cache';
+import { connect } from 'react-redux';
+import { getPlots } from '../redux/action/dataActions';
 
 const useStyles = makeStyles(
     (theme) => ({
@@ -51,19 +58,14 @@ function LinearProgressWithLabel(props) {
     );
 }
 
-function SimProgress() {
-    const classes = useStyles();
-    const [progress, setProgress] = React.useState(10);
-    const [expand, setexpand] = useState(true)
+function Download(url) {
+    document.getElementById('Download').src = Axios.defaults.baseURL + '/' + url;
+};
 
-    React.useEffect(() => {
-        const timer = setInterval(() => {
-            setProgress((prevProgress) => (prevProgress >= 100 ? 10 : prevProgress + 10));
-        }, 800);
-        return () => {
-            clearInterval(timer);
-        };
-    }, []);
+function SimProgress(props) {
+    const classes = useStyles();
+    const progress = props.progress;
+    const [expand, setexpand] = useState(true)
 
     return <>
         <div className="row mt-2">
@@ -74,7 +76,7 @@ function SimProgress() {
             </div>
             <div className='col-4'>
                 <div style={{ margin: 'auto' }} >
-                    <CircularProgressWithLabel value={progress} />
+                    <CircularProgressWithLabel value={progress['percent']} />
                 </div>
             </div>
             <div className='offset-2 col-2'>
@@ -92,33 +94,75 @@ function SimProgress() {
         </div>
         {expand ? <div className='row mt-2'>
             <div className='col-12'>
-                <LinearProgressWithLabel value={progress} />
+                <LinearProgressWithLabel value={progress['percent']} />
             </div>
         </div> : null}
     </>
 }
 
-export default function ResultsMonitor() {
+function ResultsMonitor(props) {
+    const [progress_data, setprogress_data] = useState({ current: 0, total: 1, percent: 0 });
+    let progress_data_local = { current: 0, total: 1, percent: 0 };
     const startSim = (e) => {
         e.preventDefault()
+        Axios.post('/longtask/', JSON.stringify(valueVar()))
+            .then(res => {
+                const status_url = res.data.Location;
+                update_progress(status_url)
+            })
+            .catch(error => {
+                alert('Unexpected error');
+
+            })
+        alert('simulation started')
     }
+
+    const setPlots = (data) => {
+        return pics.map((pic) => {
+            const iframe = document.getElementById(pic);
+            if (!iframe) return
+            iframe.contentDocument.open()
+            iframe.contentDocument.write(data)
+            iframe.contentDocument.close()
+        })
+    }
+
+    const update_progress = (status_url) => {
+        Axios.get('status/' + status_url)
+            .then(res => {
+                progress_data_local = res.data;
+                const percent = parseInt(progress_data_local['current'] * 100 / progress_data_local['total']);
+                progress_data_local['percent'] = percent;
+                setprogress_data(progress_data_local)
+                if (progress_data_local['state'] != 'PENDING' && progress_data_local['state'] != 'PROGRESS' && 'result' in progress_data_local) {
+                    props.getPlots(setPlots)
+                    console.log('show result')
+                }
+                else {
+                    // rerun in 2 seconds
+                    setTimeout(function () {
+                        update_progress(status_url);
+                    }, 2000);
+                }
+            })
+    }
+
     const cancelSim = (e) => {
         e.preventDefault()
     }
     const downloadMean = (e) => {
         e.preventDefault()
-        var date = new Date();
-        var timestamp = date.getTime();
+        Download('download_mean')
     }
 
     const downloadField = (e) => {
         e.preventDefault()
-        var date = new Date();
-        var timestamp = date.getTime();
+        Download('download_field')
     }
     return (
-
         <Paper elevation={3}>
+            <iframe id="Download" style={{ display: "none" }}></iframe>
+
             <div className='container' style={{ textAlign: 'center', paddingBottom: '2rem' }}>
                 <Typography variant='h5'> Results </Typography>
                 <div className="row mt-2">
@@ -143,29 +187,27 @@ export default function ResultsMonitor() {
                                     </Typography>
                     </div>
                     <div className="col-3">
-                        <Button id='download-mean' style={{ width: '5rem' }} type="submit" class="btn btn-primary" onClick={downloadMean}>Mean</Button>
+                        <Button style={{ width: '5rem' }} type="submit" class="btn btn-primary" onClick={downloadMean}>Mean</Button>
                     </div>
 
                     <div className="col-3">
-                        <Button id='download-field' style={{ width: '5rem' }} type="submit" class="btn btn-primary" onClick={downloadField}>Raw</Button>
+                        <Button style={{ width: '5rem' }} type="submit" class="btn btn-primary" onClick={downloadField}>Raw</Button>
                     </div>
                 </div>
-                <div className="row mt-2">
-
-                    <div className='col-4' style={{ textAlign: 'left' }}>
-                        <Typography variant='h6'>
-                            Explorer
-            </Typography>
-                    </div>
-                    <div className="col-3">
-                        <Link to='/resultsexplorer'>
-                            <Button id='download-mean' style={{ width: '5rem' }} type="submit" class="btn btn-primary">Start</Button>
-                        </Link>
-                    </div>
-
-                </div>
-                <SimProgress />
+                <SimProgress progress={progress_data} />
             </div>
         </Paper>
     )
 }
+
+
+
+const mapActiontoProps = {
+    getPlots
+}
+
+const mapStateToProps = (state) => ({
+    data: state.data,
+});
+
+export default connect(mapStateToProps, mapActiontoProps)(ResultsMonitor);

@@ -26,6 +26,9 @@ import TabPanel from '@material-ui/lab/TabPanel';
 import { AppBar, Grid, Tooltip } from "@material-ui/core";
 import Track, { TrackHead } from "./readTrack";
 import Error from '../util/Error';
+import { valueVar } from "../util/cache";
+import { configure } from "@testing-library/react";
+import Axios from "axios";
 
 const CreateTrack = ({ classes }) => {
     const [open, setOpen] = useState(false);
@@ -37,6 +40,7 @@ const CreateTrack = ({ classes }) => {
     const [fileError, setFileError] = useState("");
     const [tabOpen, setTabOpen] = useState('1');
     const [configUsed, setconfigUsed] = useState(1)
+    let tracks = null;
 
     const handleChange = (event, newValue) => {
         event.preventDefault();
@@ -76,9 +80,22 @@ const CreateTrack = ({ classes }) => {
 
     const handleSubmit = async (event, createTrack) => {
         event.preventDefault();
-        setSubmitting(true);
-        const uploadedUrl = await handleAudioUpload();
-        createTrack({ variables: { title, hashtag, description, url: uploadedUrl } });
+        if (tabOpen === '2') {
+            setSubmitting(true);
+            const uploadedUrl = await handleAudioUpload();
+            createTrack({ variables: { title, hashtag, description, url: uploadedUrl } });
+        } else if (tabOpen === '1') {
+            if (!tracks) return
+            const index = tracks.findIndex(
+                track => track.id === configUsed
+            )
+            Axios.get('/music/' + tracks[index].url)
+                .then(config => valueVar(config.data))
+                .catch(e => console.log(e))
+
+        }
+        setSubmitting(false)
+        setOpen(false)
     };
 
     let withTrack = (obj) => { };
@@ -114,7 +131,7 @@ const CreateTrack = ({ classes }) => {
                                 {({ data, loading, error }) => {
                                     if (loading) return null;
                                     if (error) return <Error error={error} />;
-                                    const tracks = data.track;
+                                    tracks = data.track;
                                     return <Grid container>
                                         {loading && <div> Loading... </div>}
                                         {tracks.map((track) => <Track key={track.id} track={track} setconfigUsed={setconfigUsed} configUsed={configUsed} />)}
@@ -146,7 +163,7 @@ const CreateTrack = ({ classes }) => {
                                         <form name='form'>
                                             <DialogContentText>
                                                 Title
-                                    </DialogContentText>
+                                            </DialogContentText>
                                             <FormControl fullWidth>
                                                 <TextField
                                                     label="Title"
@@ -206,14 +223,16 @@ const CreateTrack = ({ classes }) => {
                         className={classes.cancel}
                     >
                         cancel
-                  </Button>
+                    </Button>
                     <Button
                         disabled={
                             tabOpen === '2' && (submitting || !title.trim() || !description.trim() || !file)
                         }
                         type="cancel"
                         className={classes.save}
-                        onClick={event => handleSubmit(event, withTrack)}
+                        onClick={event => {
+                            handleSubmit(event, withTrack)
+                        }}
                     >
                         {submitting ? (
                             <CircularProgress className={classes.save} size={24} />
@@ -221,10 +240,6 @@ const CreateTrack = ({ classes }) => {
                     </Button>
                 </DialogActions>
             </Dialog>
-
-
-
-
         </>
     );
 };

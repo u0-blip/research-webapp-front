@@ -1,7 +1,7 @@
 import React from 'react';
 import './App.css';
 import { Route, BrowserRouter as Router, Switch } from 'react-router-dom';
-import { ApolloClient, createHttpLink, gql } from '@apollo/client';
+import { ApolloClient, createHttpLink, gql, useQuery } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
 
 import { ApolloProvider } from 'react-apollo';
@@ -18,6 +18,9 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import ResultsExplorer from './pages/resultsExplorer';
 import { cache, currentSection } from './util/cache';
 import Structure from './pages/stucture';
+//Redux
+import { Provider } from "react-redux";
+import store from "./redux/store";
 
 Axios.defaults.baseURL = 'http://127.0.0.1:8000';
 
@@ -51,25 +54,26 @@ function App() {
   const changeSecName = (name) => {
     currentSection(name)
   }
-
   return (
 
-    <ApolloProvider client={client}>
-      <secContext.Provider value={{ name: currentSection(), changeSecName }}>
-        <Router>
-          <Navbar />
-          <Switch>
-            <Route exact path='/' component={Home} />
-            <Route exact path='/nav/:sec' component={Home} />
-            <Route exact path='/resultsexplorer' component={ResultsExplorer} />
-            <Route exact path='/structure' component={Structure} />
-            <Route exact path='/login' component={Login} />
-            <Route exact path='/signup' component={Signup} />
-            <Route path='/profile/:id' component={Profile} />
-          </Switch>
-        </Router>
-      </secContext.Provider>
-    </ApolloProvider>
+    <Provider store={store}>
+      <ApolloProvider client={client}>
+        <secContext.Provider value={{ name: currentSection(), changeSecName }}>
+          <Router>
+            <Navbar />
+            <Switch>
+              <Route exact path='/' component={Home} />
+              <Route exact path='/config/:sec' component={Home} />
+              <Route exact path='/resultsexplorer' component={ResultsExplorer} />
+              <Route exact path='/structure/:sec' component={Structure} />
+              <Route exact path='/login' component={Login} />
+              <Route exact path='/signup' component={Signup} />
+              <Route path='/profile/:id' component={Profile} />
+            </Switch>
+          </Router>
+        </secContext.Provider>
+      </ApolloProvider>
+    </Provider>
   );
 }
 

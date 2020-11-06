@@ -1,6 +1,9 @@
 import React from 'react'
 import ConfigManager from './configManager'
 import Result from './result'
+import CreateTrack from '../tracks/createTrack';
+import DownloadConfig from '../tracks/download';
+import ResetConfig from '../tracks/reset';
 
 export default function Home() {
     return (
@@ -13,6 +16,10 @@ export default function Home() {
                     <Result />
                 </div>
             </div>
+
+            <CreateTrack />
+            <DownloadConfig />
+            <ResetConfig />
         </div>
     )
 }

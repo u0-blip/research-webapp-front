@@ -1,13 +1,14 @@
-import { TextField, Typography } from '@material-ui/core';
+import { TextField, Typography, Button } from '@material-ui/core';
 import React, { useState } from 'react'
 import { useReactiveVar } from '@apollo/client';
-import { currentSection, valueVar } from '../util/cache';
-import { optionalField, optionalFieldExist, optionalIncDecField, sections_name } from '../default_value';
+import { valueVar } from '../util/cache';
+import { sections_name } from '../default_value';
 import { configSecName, structSecName, mainSectionName } from '../util/cache';
-import IncDecField from './incDecField';
+import AddIcon from '@material-ui/icons/Add';
+import RemoveIcon from '@material-ui/icons/Remove';
 
 
-let InputField = (props) => {
+let IncDecField = (props) => {
     const configVar = useReactiveVar(configSecName)
     const structVar = useReactiveVar(structSecName)
     const mainVar = useReactiveVar(mainSectionName)
@@ -31,10 +32,7 @@ let InputField = (props) => {
             delete newError[id]
             seterror(newError)
         }
-        props.changeValue(event.target.value);
-        // if (this.state.errors.length > 0) {
-        //     this.setState({ errors: '' })
-        // }
+        props.changeValue(parseFloat(event.target.value));
     }
 
     return <div className="container" name={name} style={{ textAlign: 'center' }}>
@@ -48,32 +46,32 @@ let InputField = (props) => {
                 </Typography>
             </div>
             <div className="col-3">
+                <Button onClick={(event) => {
+                    const i = parseFloat(input)
+                    if (i - 1 >= 0) props.changeValue(parseFloat(input) - 1)
+                }} variant="contained" color="primary">
+                    <RemoveIcon />
+                </Button>
+            </div>
+            <div className="col-3">
                 <TextField
                     value={input}
+                    inputProps={{ min: 0, style: { textAlign: 'center' } }}
                     error={Object.keys(error).length > 0}
                     helperText={error[0]}
                     onChange={(event) => handleChange(event, 0)}
                     style={{ marginBottom: '1rem' }}
                 />
             </div>
+            <div className="col-3">
+                <Button onClick={(event) => {
+                    props.changeValue(parseFloat(input) + 1);
+                }} variant="contained" color="primary">
+                    <AddIcon />
+                </Button>
+            </div>
         </div>
     </div>
 }
-let InputFields = (props) => {
-    const valVar = useReactiveVar(valueVar);
-    const index = sections_name.indexOf('Simulation');
-    const sim_types = valVar[index]['radio']['sim_types'][0]
-    const sim_types_fields = optionalFieldExist[sim_types]
-    return Object.entries(props.values).map((value) => {
-        if (!optionalField.includes(value[0]) || (optionalField.includes(value[0]) && sim_types_fields.includes(value[0]))) {
-            if (optionalIncDecField.includes(value[0])) {
-                return <IncDecField value={value} changeValue={props.changeValue(value[0])} getValue={props.getValue(value[0])} key={value[0]} />
-            }
-            else {
-                return <InputField value={value} changeValue={props.changeValue(value[0])} getValue={props.getValue(value[0])} key={value[0]} />
-            }
-        }
-    })
-}
 
-export default InputFields;
+export default IncDecField;

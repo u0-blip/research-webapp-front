@@ -4,7 +4,6 @@ import axis from '../statics/axis.png';
 import { useReactiveVar } from '@apollo/client';
 import Draggable from './balls';
 import { valueVar } from '../util/cache';
-import Plot from './plot';
 
 
 export default function StructureEditor() {
@@ -25,13 +24,13 @@ export default function StructureEditor() {
 
 
     const valVarRes = useReactiveVar(valueVar);
-    let matrixPosXY = valVarRes[2]['range']['solid_center'];
-    let matrixSizeXY = valVarRes[2]['range']['solid_size'];
+    let matrixPosXY = valVarRes[2]['coord']['solid_center'];
+    let matrixSizeXY = valVarRes[2]['coord']['solid_size'];
 
     const setmatrixPos = (newInput) => {
         let value = valueVar()
         let newValue = [...value];
-        newValue[2]['range']['solid_center'] = [convX(newInput.translateX) + matrixSizeXY[0] / 2, convY(newInput.translateY) - matrixSizeXY[1] / 2, 0];
+        newValue[2]['coord']['solid_center'] = [convX(newInput.translateX) + matrixSizeXY[0] / 2, convY(newInput.translateY) - matrixSizeXY[1] / 2, 0];
         valueVar(newValue);
     }
 
@@ -39,8 +38,8 @@ export default function StructureEditor() {
     const matrixSize = [matrixSizeXY[0] * 40.5, matrixSizeXY[1] * 40.5];
 
 
-    let sourcePosXY = valVarRes[4]['range']['center'];
-    let sourceSizeXY = valVarRes[4]['range']['size'];
+    let sourcePosXY = valVarRes[4]['coord']['center'];
+    let sourceSizeXY = valVarRes[4]['coord']['size'];
     const sourceSize = [sourceSizeXY[0] * 40.5, sourceSizeXY[1] * 40.5];
 
     const sourcePos = [convPx(sourcePosXY[0] - sourceSizeXY[0] / 2), convPy(sourcePosXY[1] + sourceSizeXY[1] / 2)];
@@ -48,7 +47,7 @@ export default function StructureEditor() {
     const setsourcePos = (newInput) => {
         let value = valueVar()
         let newValue = [...value];
-        valVarRes[4]['range']['center'] = [convX(newInput.translateX) + sourceSizeXY[0] / 2, convY(newInput.translateY) - sourceSizeXY[1] / 2, 0];
+        valVarRes[4]['coord']['center'] = [convX(newInput.translateX) + sourceSizeXY[0] / 2, convY(newInput.translateY) - sourceSizeXY[1] / 2, 0];
         valueVar(newValue);
     }
 
@@ -124,13 +123,6 @@ export default function StructureEditor() {
                         </Draggable>
                     </Paper>
 
-                </div>
-            </Paper>
-
-
-            <Paper elevation={3}>
-                <div className="row justify-content-center">
-                    <Plot url='matrix_editor' width='33rem' height='33rem' />
                 </div>
             </Paper>
         </>

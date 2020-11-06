@@ -7,14 +7,18 @@ import { GET_SELF_QUERY } from '../App';
 import { sections_name } from '../default_value';
 import clsx from 'clsx';
 import { useReactiveVar } from '@apollo/client';
-import { currentSection } from './cache';
+import { configSecName, structSecName, mainSectionName } from './cache';
 
 export function Navbar(props) {
 
     const classes = styles();
     let userSection;
-    const [expand, setexpand] = useState('config')
-    const [configSecName, setconfigSecName] = useState('General')
+    const configVar = useReactiveVar(configSecName)
+    const structVar = useReactiveVar(structSecName)
+    const mainVar = useReactiveVar(mainSectionName)
+
+    const sections_name_config = ['Visualization', 'General', 'Simulation', 'Geometry', 'Source']
+    const sections_name_struct = []
 
     userSection = <Query query={GET_SELF_QUERY} fetchPolicy='cache-and-network'>
         {({ error, loading, data }) => {
@@ -53,10 +57,6 @@ export function Navbar(props) {
         }}
     </Query>
 
-    const changeHome = (e, name) => {
-        currentSection(name)
-    }
-
 
     return (
         <AppBar className={classes.root}>
@@ -70,10 +70,9 @@ export function Navbar(props) {
                 <Link
                     to={`/`}
                     onClick={(e) => {
-                        setexpand('config')
-                        changeHome(e, 'Visualization')
+                        mainSectionName('config')
                     }}
-                    className={clsx(expand === 'config' && classes.active, classes.grow)}>
+                    className={clsx(mainVar === 'config' && classes.active, classes.grow)}>
                     <Typography
                         style={{ margin: 'auto', paddingTop: '1.2rem', paddingBottom: '1.2rem', color: '#f3f0f1' }} variant='body1'
                         noWrap>
@@ -81,12 +80,11 @@ export function Navbar(props) {
                     </Typography>
                 </Link>
                 <Link
-                    to={`/structure`}
+                    to={`/structure/${structVar}`}
                     onClick={(e) => {
-                        setexpand('structure');
-                        changeHome(e, 'Geometry');
+                        mainSectionName('structure');
                     }}
-                    className={clsx(expand === 'structure' && classes.active, classes.grow)}>
+                    className={clsx(mainVar === 'structure' && classes.active, classes.grow)}>
                     <Typography
                         style={{ margin: 'auto', paddingTop: '1.2rem', paddingBottom: '1.2rem', color: '#f3f0f1' }} variant='body1'
                         noWrap>
@@ -95,8 +93,8 @@ export function Navbar(props) {
                 </Link>
                 <Link
                     to={`/resultsexplorer`}
-                    onClick={(e) => setexpand('result')}
-                    className={clsx(expand === 'result' && classes.active, classes.grow)}>
+                    onClick={(e) => mainSectionName('result')}
+                    className={clsx(mainVar === 'result' && classes.active, classes.grow)}>
                     <Typography
                         style={{ margin: 'auto', paddingTop: '1.2rem', paddingBottom: '1.2rem', color: '#f3f0f1' }} variant='body1'
                         noWrap>
@@ -107,21 +105,43 @@ export function Navbar(props) {
 
 
             </Toolbar>
-            {expand === 'config' && <Toolbar style={{
+            {mainVar === 'config' && <Toolbar style={{
                 background: 'lightblue',
                 width: '70%',
                 minHeight: '37px',
                 margin: 'auto',
                 borderRadius: '10px',
             }}>
-                {sections_name.map((name) => {
-                    return name === 'Geometry' ? null : <Link
-                        to={`/nav/${name}`}
+                {sections_name_config.map((name) => {
+                    return <Link
+                        to={`/config/${name}`}
                         onClick={(e) => {
-                            changeHome(e, name)
-                            setconfigSecName(name)
+                            configSecName(name)
                         }}
-                        className={clsx(configSecName === name && classes.active, classes.grow)}
+                        className={clsx(configVar === name && classes.active, classes.grow)}
+                        key={name}>
+                        <Typography style={{ margin: 'auto', paddingTop: '0.2rem', paddingBottom: '0.2rem' }} variant='body1' color='textSecondary' noWrap>
+                            {name}
+                        </Typography>
+                    </Link>
+                })}
+            </Toolbar>}
+
+
+            {mainVar === 'structure' && <Toolbar style={{
+                background: 'lightblue',
+                width: '70%',
+                minHeight: '37px',
+                margin: 'auto',
+                borderRadius: '10px',
+            }}>
+                {sections_name_struct.map((name) => {
+                    return <Link
+                        to={`/structure/${name}`}
+                        onClick={(e) => {
+                            structSecName(name)
+                        }}
+                        className={clsx(structVar === name && classes.active, classes.grow)}
                         key={name}>
                         <Typography style={{ margin: 'auto', paddingTop: '0.2rem', paddingBottom: '0.2rem' }} variant='body1' color='textSecondary' noWrap>
                             {name}

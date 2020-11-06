@@ -1,16 +1,13 @@
 import React from 'react'
 import ConfigManager from './configManager'
-import Result from './result'
+import StructureEditor from '../components/structureEditor';
 
 export default function Structure() {
     return (
         <div className='container'>
-            <div className='row'>
+            <div className='row' style={{ justifyContent: 'center' }}>
                 <div className='col-6' style={{ padding: '1rem' }}>
-                    <ConfigManager />
-                </div>
-                <div className='col-6' style={{ padding: '1rem' }}>
-                    <Result />
+                    <StructureEditor />
                 </div>
             </div>
         </div>

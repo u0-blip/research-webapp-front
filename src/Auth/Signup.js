@@ -20,6 +20,7 @@ const Signup = ({ classes }) => {
             client.writeQuery({ query: IS_LOGGED_IN_QUERY, data: { isLoggedIn: true } });
             this.props.history.push('/')
         } catch (e) {
+            console.log(e)
             return
         }
     }

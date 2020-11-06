@@ -23,21 +23,7 @@ import Error from '../util/Error';
 import { GetApp, StorageOutlined } from "@material-ui/icons";
 import { useMutation } from "@apollo/react-hooks";
 import { valueVar } from "../util/cache";
-
-
-function download(filename, text) {
-    var element = document.createElement('a');
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-    element.setAttribute('download', filename);
-
-    element.style.display = 'none';
-    document.body.appendChild(element);
-
-    element.click();
-
-    document.body.removeChild(element);
-}
-
+import download from '../util/download';
 
 const DownloadConfig = ({ classes }) => {
     const [open, setOpen] = useState(false);
@@ -54,7 +40,6 @@ const DownloadConfig = ({ classes }) => {
             const data = new FormData();
             let file = new File([f], `${title}.txt`, { type: "text/plain" });
             data.append('file', file);
-            console.log(data, file)
             const res = await axios.post(axios.defaults.baseURL + "/music/", data);
             return res.data.url;
         } catch (err) {
@@ -63,13 +48,14 @@ const DownloadConfig = ({ classes }) => {
         }
     };
 
-    const handleUpdateCache = (cache, { data: { createTrack } }) => {
-        const data = cache.readQuery({ query: GET_TRACKS_QUERY })
-        const music = data.music.concat(createTrack.music)
-        cache.writeQuery({ query: GET_TRACKS_QUERY, data: { music } })
-    }
 
-    const [createTrack, { loading, error }] = useMutation(CREATE_TRACK_MUTATION);
+    const [createTrack] = useMutation(CREATE_TRACK_MUTATION, {
+        update(cache, { data: { createTrack } }) {
+            const data = cache.readQuery({ query: GET_TRACKS_QUERY })
+            const track = data.track.concat(createTrack.track)
+            cache.writeQuery({ query: GET_TRACKS_QUERY, data: { track } })
+        }
+    });
 
     const handleChange = (event) => {
         event.preventDefault()
