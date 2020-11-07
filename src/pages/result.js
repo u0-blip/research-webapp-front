@@ -17,13 +17,13 @@ export default function Result() {
         rms: rms, structure: structure, transient: transient
     };
     const [expand, setExpand] = useState({ img: defaultImages['structure'], title: 'structure' });
-    const secName = useReactiveVar(currentSection)
+    const configVar = useReactiveVar(currentSection)
 
 
     return (
         <>
 
-            {secName !== 'Geometry' &&
+            {configVar !== 'Geometry' &&
                 <>
                     <ResultsMonitor />
                     <Paper elevation={3}>

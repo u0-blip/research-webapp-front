@@ -26,11 +26,11 @@ import TabPanel from '@material-ui/lab/TabPanel';
 import { AppBar, Grid, Tooltip } from "@material-ui/core";
 import Track, { TrackHead } from "./readTrack";
 import Error from '../util/Error';
-import { valueVar } from "../util/cache";
-import { configure } from "@testing-library/react";
 import Axios from "axios";
+import { connect } from 'react-redux';
+import { setConfig, setAllConfig } from '../redux/action/dataActions';
 
-const CreateTrack = ({ classes }) => {
+const CreateTrack = (props) => {
     const [open, setOpen] = useState(false);
     const [title, setTitle] = useState("");
     const [hashtag, setHashtag] = useState("");
@@ -90,10 +90,10 @@ const CreateTrack = ({ classes }) => {
                 track => track.id === configUsed
             )
             Axios.get('/music/' + tracks[index].url)
-                .then(config => valueVar(config.data))
+                .then(config => props.setAllConfig(config.data))
                 .catch(e => console.log(e))
-
         }
+
         setSubmitting(false)
         setOpen(false)
     };
@@ -104,14 +104,14 @@ const CreateTrack = ({ classes }) => {
         <>
             {/* create track button */}
             <Tooltip title="Open config" placement="top">
-                <Button onClick={() => setOpen(true)} variant="contained" className={classes.fab} color="secondary">
+                <Button onClick={() => setOpen(true)} variant="contained" className={props.classes.fab} color="secondary">
                     {open ? <ClearIcon /> : <LaunchIcon />}
                 </Button>
             </Tooltip>
 
             {/* create track DIALOG */}
 
-            <Dialog open={open} className={classes.dialog} fullWidth classes={{ paper: classes.dialogPaper }} >
+            <Dialog open={open} className={props.classes.dialog} fullWidth classes={{ paper: props.classes.dialogPaper }} >
                 <DialogTitle>
                     <AppBar position="static">
                         <TabContext value={tabOpen}>
@@ -170,7 +170,7 @@ const CreateTrack = ({ classes }) => {
                                                     placeholder="Title"
                                                     onChange={event => setTitle(event.target.value)}
                                                     value={title}
-                                                    className={classes.textField}
+                                                    className={props.classes.textField}
                                                 />
                                             </FormControl>
 
@@ -181,7 +181,7 @@ const CreateTrack = ({ classes }) => {
                                                     placeholder="Description"
                                                     onChange={event => setDescription(event.target.value)}
                                                     value={description}
-                                                    className={classes.textField}
+                                                    className={props.classes.textField}
                                                 />
                                             </FormControl>
 
@@ -191,15 +191,15 @@ const CreateTrack = ({ classes }) => {
                                                     required
                                                     type="file"
                                                     accept="audio"
-                                                    className={classes.input}
+                                                    className={props.classes.input}
                                                     onChange={handleAudioChange}
                                                 />
                                                 <label htmlFor="audio">
                                                     <Button variant="outlined" color={file ? "secondary" : "inherit"}
-                                                        component="span" className={classes.button}
+                                                        component="span" className={props.classes.button}
                                                     >
                                                         Max size 15Mb
-                                                <StorageOutlined className={classes.icon} />
+                                                <StorageOutlined className={props.classes.icon} />
                                                     </Button>
                                                     {file && file.name}
                                                     <FormHelperText>{fileError}</FormHelperText>
@@ -220,7 +220,7 @@ const CreateTrack = ({ classes }) => {
                     <Button
                         disabled={submitting}
                         onClick={() => setOpen(false)}
-                        className={classes.cancel}
+                        className={props.classes.cancel}
                     >
                         cancel
                     </Button>
@@ -229,13 +229,13 @@ const CreateTrack = ({ classes }) => {
                             tabOpen === '2' && (submitting || !title.trim() || !description.trim() || !file)
                         }
                         type="cancel"
-                        className={classes.save}
+                        className={props.classes.save}
                         onClick={event => {
                             handleSubmit(event, withTrack)
                         }}
                     >
                         {submitting ? (
-                            <CircularProgress className={classes.save} size={24} />
+                            <CircularProgress className={props.classes.save} size={24} />
                         ) : ("submit")}
                     </Button>
                 </DialogActions>
@@ -302,5 +302,12 @@ const styles = theme => ({
         zIndex: "200"
     }
 });
+const mapActiontoProps = {
+    setConfig,
+}
 
-export default withStyles(styles)(CreateTrack);
+const mapStateToProps = (state) => ({
+    data: state.data,
+});
+
+export default withStyles(styles)(connect(mapStateToProps, mapActiontoProps)(CreateTrack));

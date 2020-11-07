@@ -43,3 +43,10 @@ export const setConfig = (index, cat, field, value) => (dispatch) => {
         payload: [index, cat, field, value]
     })
 }
+
+export const setAllConfig = (config) => (dispatch) => {
+    dispatch({
+        type: 'SET_CONFIG',
+        payload: config
+    })
+}

@@ -1,7 +1,6 @@
 import { Typography, Button } from '@material-ui/core';
 import React, { useState } from 'react'
 import { useReactiveVar } from '@apollo/client';
-import { valueVar } from '../util/cache';
 import { optionalField, optionalFieldExist, sections_name } from '../default_value';
 import { configSecName, structSecName, mainSectionName } from '../util/cache';
 import Select from '@material-ui/core/Select';
@@ -9,54 +8,64 @@ import AddIcon from '@material-ui/icons/Add';
 import RemoveIcon from '@material-ui/icons/Remove';
 
 import MenuItem from '@material-ui/core/MenuItem';
+import { connect } from 'react-redux';
+import { setConfig } from '../redux/action/dataActions';
 
-let AssignField = (props) => {
+let AssignFieldUnconnect = (props) => {
     const configVar = useReactiveVar(configSecName)
-    const valVar = useReactiveVar(valueVar);
+
     let index = sections_name.indexOf('Simulation');
-    const sim_types = valVar[index]['radio']['sim_types'][0]
+    const sim_types = props.data.configValues[index]['radio']['sim_types'][0]
 
     const [name, defaultValue] = props.field;
 
     const indexSec = sections_name.indexOf(configVar);
-    const valVarRes = valVar[indexSec];
-    const input = props.getValue(valVarRes);
+
+    const input = props.data.configValues[indexSec][props.cat][props.field];
+    const inputSimType = input[sim_types];
 
     const indexGeo = sections_name.indexOf('Geometry');
-    const eps = valVar[indexGeo]['material']['eps']
+    const eps = props.data.configValues[indexGeo]['material']['eps']
 
     const [error, seterror] = useState({})
 
     const handleChange = (event, id) => {
-        let newInput = [...input];
-        newInput[id] = event.target.value;
-        if (isNaN(newInput[id])) {
+        let newInputSimType = [...inputSimType];
+        newInputSimType[id] = event.target.value;
+        if (isNaN(newInputSimType[id])) {
             seterror({ ...error, [id]: 'Must be number' })
         } else {
             let newError = { ...error };
             delete newError[id]
             seterror(newError)
         }
-        props.changeValue(newInput);
+        let newInput = { ...input }
+        newInput[sim_types] = newInputSimType;
+        props.setConfig(indexSec, props.cat, props.field, newInput);
     }
 
     if (sim_types === 'shape') {
         index = sections_name.indexOf('Geometry');
-        const num_particles = valVar[index]['input']['num_particles']
-        let newInput = [...input];
-        const current_particle = newInput.length
+        const num_particles = props.data.configValues[index]['input']['num_particles']
+        let newInputSimType = [...inputSimType];
+
+        const current_particle = newInputSimType.length
         if (current_particle > num_particles) {
-            newInput.splice(num_particles)
-            props.changeValue(newInput);
+            newInputSimType.splice(num_particles)
+            let newInput = { ...input }
+            newInput[sim_types] = newInputSimType;
+            props.setConfig(indexSec, props.cat, props.field, newInput);
         } else if (current_particle < num_particles) {
             for (var i = 0; i < num_particles - current_particle; i++) {
-                newInput.push(1)
+                newInputSimType.push(1)
             }
-            props.changeValue(newInput);
+            let newInput = { ...input }
+            newInput[sim_types] = newInputSimType;
+            props.setConfig(indexSec, props.cat, props.field, newInput);
         }
     }
     let material_name = ''
-    const inputMap = input.map((value, i) => {
+    const inputMap = inputSimType.map((value, i) => {
         if (['checker'].includes(sim_types)) {
             if (i === 0) material_name = 'Matrix'
             else material_name = name.replace('_', ' ') + ' ' + String(Math.round(i))
@@ -86,7 +95,7 @@ let AssignField = (props) => {
                         }}
                     >
                         {eps.map((eps_one, j) => {
-                            return j % 2 || j === 0 ? null : <MenuItem key={Math.round(j / 2)} value={Math.round(j / 2)}>{String(eps[j].toFixed(4)) + ' + ' + String(eps[j + 1].toFixed(4)) + 'i'}</MenuItem>
+                            return j % 2 || j === 0 && !isNaN(eps[j]) && !isNaN(eps[j + 1]) ? null : <MenuItem key={Math.round(j / 2)} value={Math.round(j / 2)}>{String(parseFloat(eps[j]).toFixed(4)) + ' + ' + String(parseFloat(eps[j + 1]).toFixed(4)) + 'i'}</MenuItem>
                         })}
                     </Select>
                 </div>
@@ -99,11 +108,13 @@ let AssignField = (props) => {
         {['checker', 'voronoi'].includes(sim_types) && <div className='row'>
             <div className="col-6" style={{ justifyContent: 'center', display: 'flex' }}>
                 <Button onClick={(event) => {
-                    const len = input.length
+                    const len = inputSimType.length
                     if (len > 2) {
-                        let newInput = [...input];
-                        newInput.pop()
-                        props.changeValue(newInput);
+                        let newInputSimType = [...inputSimType];
+                        newInputSimType.pop()
+                        let newInput = { ...input }
+                        newInput[sim_types] = newInputSimType;
+                        props.setConfig(indexSec, props.cat, props.field, newInput);
                     }
                 }} variant="contained" color="primary">
                     <RemoveIcon />
@@ -111,9 +122,11 @@ let AssignField = (props) => {
             </div>
             <div className="col-6" style={{ justifyContent: 'center', display: 'flex' }}>
                 <Button onClick={(event) => {
-                    let newInput = [...input];
-                    newInput.push(1)
-                    props.changeValue(newInput);
+                    let newInputSimType = [...inputSimType];
+                    newInputSimType.push(1)
+                    let newInput = { ...input }
+                    newInput[sim_types] = newInputSimType;
+                    props.setConfig(indexSec, props.cat, props.field, newInput);
                 }} variant="contained" color="primary">
                     <AddIcon />
                 </Button>
@@ -122,17 +135,29 @@ let AssignField = (props) => {
     </>
 }
 
+
+
+const mapActiontoProps = {
+    setConfig,
+}
+
+const mapStateToProps = (state) => ({
+    data: state.data,
+});
+
+let AssignField = connect(mapStateToProps, mapActiontoProps)(AssignFieldUnconnect)
+
+
 let AssignFields = (props) => {
-    const valVar = useReactiveVar(valueVar);
+
     const index = sections_name.indexOf('Simulation');
-    const sim_types = valVar[index]['radio']['sim_types'][0]
+    const sim_types = props.data.configValues[index]['radio']['sim_types'][0]
     const sim_types_fields = optionalFieldExist[sim_types]
-    return Object.entries(props.values).map((field) => {
-        const field_name = field[0]
-        if (!optionalField.includes(field_name) || (optionalField.includes(field_name) && sim_types_fields.includes(field_name)))
-            return <AssignField field={field} changeValue={props.changeValue(field_name)} getValue={props.getValue(field_name)} key={field_name} />
+    return Object.entries(props.values).map((value) => {
+        if (!optionalField.includes(value[0]) || (optionalField.includes(value[0]) && sim_types_fields.includes(value[0])))
+            return <AssignField cat={props.cat} field={value[0]} value={value} key={value[0]} />
     })
 }
 
 
-export default AssignFields
+export default connect(mapStateToProps, mapActiontoProps)(AssignFields)

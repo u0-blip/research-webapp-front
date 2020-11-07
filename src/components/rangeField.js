@@ -1,31 +1,26 @@
 import { TextField, Typography } from '@material-ui/core';
 import React, { useState } from 'react'
 import { useReactiveVar } from '@apollo/client';
-import { currentSection, valueVar } from '../util/cache';
+import { currentSection } from '../util/cache';
 import { optionalField, optionalFieldExist, sections_name } from '../default_value';
 import { configSecName, structSecName, mainSectionName } from '../util/cache';
-let RangeField = (props) => {
-    const configVar = useReactiveVar(configSecName)
-    const structVar = useReactiveVar(structSecName)
-    const mainVar = useReactiveVar(mainSectionName)
-    const [name, defaultValue] = props.value;
-    let secName = '';
-    if (mainVar === 'config') {
-        secName = configVar;
-    } else {
-        secName = structVar
-    }
-    const indexSec = sections_name.indexOf(secName);
-    const valVar = useReactiveVar(valueVar);
-    const valVarRes = valVar[indexSec];
+import { connect } from 'react-redux';
+import { setConfig } from '../redux/action/dataActions';
 
-    const input = props.getValue(valVarRes);
+
+let RangeFieldUnconnect = (props) => {
+    const configVar = useReactiveVar(configSecName)
+    const indexSec = sections_name.indexOf(configVar);
+    const [name, defaultValue] = props.value;
+
+    const input = props.data.configValues[indexSec][props.cat][props.field];
+
 
     const [error, seterror] = useState({})
 
     const handleChange = (event, id) => {
         let newInput = [...input];
-        newInput[id] = parseFloat(event.target.value);
+        newInput[id] = event.target.value;
         if (isNaN(newInput[id])) {
             seterror({ ...error, [id]: 'Must be number' })
         } else {
@@ -33,10 +28,7 @@ let RangeField = (props) => {
             delete newError[id]
             seterror(newError)
         }
-        props.changeValue(newInput);
-        // if (this.state.errors.length > 0) {
-        //     this.setState({ errors: '' })
-        // }
+        props.setConfig(indexSec, props.cat, props.field, newInput);
     }
 
     return <div className="container" name={name} style={{ textAlign: 'center' }}>
@@ -78,19 +70,29 @@ let RangeField = (props) => {
             </div>
         </div>
     </div>
-
 }
 
+
+const mapActiontoProps = {
+    setConfig,
+}
+
+const mapStateToProps = (state) => ({
+    data: state.data,
+});
+
+let RangeField = connect(mapStateToProps, mapActiontoProps)(RangeFieldUnconnect)
+
 let RangeFields = (props) => {
-    const valVar = useReactiveVar(valueVar);
+
     const index = sections_name.indexOf('Simulation');
-    const sim_types = valVar[index]['radio']['sim_types'][0]
+    const sim_types = props.data.configValues[index]['radio']['sim_types'][0]
     const sim_types_fields = optionalFieldExist[sim_types]
     return Object.entries(props.values).map((value) => {
         if (!optionalField.includes(value[0]) || (optionalField.includes(value[0]) && sim_types_fields.includes(value[0])))
-            return <RangeField value={value} changeValue={props.changeValue(value[0])} getValue={props.getValue(value[0])} key={value[0]} />
+            return <RangeField cat={props.cat} field={value[0]} value={value} key={value[0]} />
     })
 }
 
 
-export default RangeFields
+export default connect(mapStateToProps, mapActiontoProps)(RangeFields);

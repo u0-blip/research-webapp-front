@@ -3,10 +3,11 @@ import React, { useState, Component } from 'react'
 import axis from '../statics/axis.png';
 import { useReactiveVar } from '@apollo/client';
 import Draggable from './balls';
-import { valueVar } from '../util/cache';
+import { connect } from 'react-redux';
+import { setConfig } from '../redux/action/dataActions';
 
 
-export default function StructureEditor() {
+function StructureEditor(props) {
 
     const convX = (px) => {
         return px / 40.5 - 6.53
@@ -22,33 +23,29 @@ export default function StructureEditor() {
     }
 
 
-
-    const valVarRes = useReactiveVar(valueVar);
-    let matrixPosXY = valVarRes[2]['coord']['solid_center'];
-    let matrixSizeXY = valVarRes[2]['coord']['solid_size'];
+    let matrixPosXY = props.data.configValues[2]['coord']['solid_center'];
+    let matrixSizeXY = props.data.configValues[2]['coord']['solid_size'];
 
     const setmatrixPos = (newInput) => {
-        let value = valueVar()
-        let newValue = [...value];
-        newValue[2]['coord']['solid_center'] = [convX(newInput.translateX) + matrixSizeXY[0] / 2, convY(newInput.translateY) - matrixSizeXY[1] / 2, 0];
-        valueVar(newValue);
+        props.setConfig(
+            2, 'coord', 'solid_center',
+            [convX(newInput.translateX) + matrixSizeXY[0] / 2, convY(newInput.translateY) - matrixSizeXY[1] / 2, 0]);
     }
 
     const matrixPos = [convPx(matrixPosXY[0] - matrixSizeXY[0] / 2), convPy(matrixPosXY[1] + matrixSizeXY[1] / 2)];
     const matrixSize = [matrixSizeXY[0] * 40.5, matrixSizeXY[1] * 40.5];
 
 
-    let sourcePosXY = valVarRes[4]['coord']['center'];
-    let sourceSizeXY = valVarRes[4]['coord']['size'];
+    let sourcePosXY = props.data.configValues[4]['coord']['center'];
+    let sourceSizeXY = props.data.configValues[4]['coord']['size'];
     const sourceSize = [sourceSizeXY[0] * 40.5, sourceSizeXY[1] * 40.5];
 
     const sourcePos = [convPx(sourcePosXY[0] - sourceSizeXY[0] / 2), convPy(sourcePosXY[1] + sourceSizeXY[1] / 2)];
 
     const setsourcePos = (newInput) => {
-        let value = valueVar()
-        let newValue = [...value];
-        valVarRes[4]['coord']['center'] = [convX(newInput.translateX) + sourceSizeXY[0] / 2, convY(newInput.translateY) - sourceSizeXY[1] / 2, 0];
-        valueVar(newValue);
+        props.setConfig(
+            4, 'coord', 'center',
+            [convX(newInput.translateX) + sourceSizeXY[0] / 2, convY(newInput.translateY) - sourceSizeXY[1] / 2, 0]);
     }
 
 
@@ -128,3 +125,12 @@ export default function StructureEditor() {
         </>
     )
 }
+const mapActiontoProps = {
+    setConfig,
+}
+
+const mapStateToProps = (state) => ({
+    data: state.data,
+});
+
+export default connect(mapStateToProps, mapActiontoProps)(StructureEditor)

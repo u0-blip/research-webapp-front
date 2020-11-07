@@ -18,11 +18,13 @@ import { AppBar, Grid, Tooltip } from "@material-ui/core";
 import { GET_TRACKS_QUERY } from '../App';
 import Error from '../util/Error';
 import { Refresh, StorageOutlined } from "@material-ui/icons";
-import { valueVar } from "../util/cache";
+
 import { default_values } from "../default_value";
+import { connect } from 'react-redux';
+import { setConfig, setAllConfig } from '../redux/action/dataActions';
 
 
-const ResetConfig = ({ classes }) => {
+const ResetConfig = (props) => {
     const [open, setOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
 
@@ -31,31 +33,31 @@ const ResetConfig = ({ classes }) => {
         <>
             {/* create track button */}
             <Tooltip title="Reset config" placement="top">
-                <Button onClick={() => setOpen(true)} variant="contained" className={classes.fab} color="secondary">
+                <Button onClick={() => setOpen(true)} variant="contained" className={props.classes.fab} color="secondary">
                     <Refresh />
                 </Button>
             </Tooltip>
 
-            <Dialog open={open} className={classes.dialog}>
+            <Dialog open={open} className={props.classes.dialog}>
                 <form name='form' >
                     <DialogTitle>Are you sure you want to reset the configuration</DialogTitle>
                     <DialogActions>
                         <Button
                             disabled={submitting}
                             onClick={() => setOpen(false)}
-                            className={classes.cancel}
+                            className={props.classes.cancel}
                         >
                             cancel
                   </Button>
                         <Button
-                            className={classes.save}
+                            className={props.classes.save}
                             onClick={() => {
-                                valueVar(default_values);
+                                props.setAllConfig(default_values);
                                 setOpen(false);
                             }}
                         >
                             {submitting ? (
-                                <CircularProgress className={classes.save} size={24} />
+                                <CircularProgress className={props.classes.save} size={24} />
                             ) : ("reset")}
                         </Button>
                     </DialogActions>
@@ -102,4 +104,11 @@ const styles = theme => ({
     }
 });
 
-export default withStyles(styles)(ResetConfig);
+const mapActiontoProps = {
+    setConfig,
+}
+
+const mapStateToProps = (state) => ({
+    data: state.data,
+});
+export default withStyles(styles)(connect(mapStateToProps, mapActiontoProps)(ResetConfig));

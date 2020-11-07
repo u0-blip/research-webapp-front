@@ -7,7 +7,7 @@ import Error from '../util/Error';
 import Plot from 'react-plotly.js';
 import { connect } from 'react-redux';
 import { setSlider } from '../redux/action/dataActions';
-import { plotDict, valueVar } from '../util/cache';
+import { plotDict } from '../util/cache';
 import RangeSlider from './slider';
 
 function makeArr(startValue, stopValue, cardinality) {

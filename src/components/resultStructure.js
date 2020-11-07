@@ -8,7 +8,6 @@ import Error from '../util/Error';
 import Plot from 'react-plotly.js';
 import { connect } from 'react-redux';
 import { getPlots } from '../redux/action/dataActions';
-import { valueVar } from '../util/cache';
 import PlotlyPlot from '../components/plotlyPlot';
 
 function ResultStructure(props) {

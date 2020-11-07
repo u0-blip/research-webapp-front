@@ -1,10 +1,12 @@
 import { default_values } from '../../default_value';
 
+const default_values_in_store = !!localStorage.getItem('default_config') ? JSON.parse(localStorage.getItem('default_config')) : default_values;
+
 const initialState = {
     structure: null,
     rms: { 'rms_block': null, 'rms_xy': null, 'rms_max': null },
     sliderValue: {},
-    configValues: default_values,
+    configValues: default_values_in_store,
 };
 
 export default function (state = initialState, action) {
@@ -35,6 +37,11 @@ export default function (state = initialState, action) {
             return {
                 ...state,
                 configValues: config
+            }
+        case 'SET_WHOLE_CONFIG':
+            return {
+                ...state,
+                configValues: action.payload
             }
         default:
             return state

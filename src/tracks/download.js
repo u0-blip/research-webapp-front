@@ -22,10 +22,12 @@ import { GET_TRACKS_QUERY } from '../App';
 import Error from '../util/Error';
 import { GetApp, StorageOutlined } from "@material-ui/icons";
 import { useMutation } from "@apollo/react-hooks";
-import { valueVar } from "../util/cache";
-import download from '../util/download';
 
-const DownloadConfig = ({ classes }) => {
+import download from '../util/download';
+import { connect } from 'react-redux';
+import { getPlots } from '../redux/action/dataActions';
+
+const DownloadConfig = (props) => {
     const [open, setOpen] = useState(false);
     const [title, setTitle] = useState("");
     const [hashtag, setHashtag] = useState("");
@@ -85,11 +87,11 @@ const DownloadConfig = ({ classes }) => {
         <>
             {/* create track button */}
             <Tooltip title="Download config and result" placement="top">
-                <Button onClick={() => setOpen(true)} variant="contained" className={classes.fab} color="secondary">
+                <Button onClick={() => setOpen(true)} variant="contained" className={props.classes.fab} color="secondary">
                     <GetApp />
                 </Button>
             </Tooltip>
-            <Dialog open={open} className={classes.dialog}>
+            <Dialog open={open} className={props.classes.dialog}>
                 <form name='form'>
                     <DialogTitle>Download configuration</DialogTitle>
                     <DialogContent>
@@ -109,14 +111,14 @@ const DownloadConfig = ({ classes }) => {
                                     <Button
                                         style={{ width: '12rem', height: '3rem' }}
                                         onClick={(event) => {
-                                            setFile(JSON.stringify(valueVar()))
-                                            handleSubmit(event, JSON.stringify(valueVar()))
+                                            setFile(JSON.stringify(props.data.configValues))
+                                            handleSubmit(event, JSON.stringify(props.data.configValues))
                                             if (fileError !== '') setOpen(false)
                                         }}
-                                        className={classes.save}
+                                        className={props.classes.save}
                                     >
                                         {submitting ? (
-                                            <CircularProgress className={classes.save} size={24} />
+                                            <CircularProgress className={props.classes.save} size={24} />
                                         ) : ("Save Config Online")}
                                     </Button>
                                 </div>
@@ -131,9 +133,9 @@ const DownloadConfig = ({ classes }) => {
                                         onClick={() => {
                                             setOpen(false)
                                             if (fileError !== '') setOpen(false)
-                                            download(title, JSON.stringify(valueVar()))
+                                            download(title, JSON.stringify(props.data.configValues))
                                         }}
-                                        className={classes.save}
+                                        className={props.classes.save}
                                     >
                                         Download Config Locally
                   </Button>
@@ -145,7 +147,7 @@ const DownloadConfig = ({ classes }) => {
                                         style={{ margin: 'auto', display: 'flex' }}
                                         disabled={submitting}
                                         onClick={() => setOpen(false)}
-                                        className={classes.cancel}
+                                        className={props.classes.cancel}
                                     >
                                         cancel
                   </Button>
@@ -214,4 +216,12 @@ const styles = theme => ({
     }
 });
 
-export default withStyles(styles)(DownloadConfig);
+const mapActiontoProps = {
+    getPlots
+}
+
+const mapStateToProps = (state) => ({
+    data: state.data,
+});
+
+export default withStyles(styles)(connect(mapStateToProps, mapActiontoProps)(DownloadConfig));

@@ -8,7 +8,6 @@ import Error from '../util/Error';
 import Plot from 'react-plotly.js';
 import { connect } from 'react-redux';
 import { getPlots } from '../redux/action/dataActions';
-import { valueVar } from '../util/cache';
 import PlotlyPlot from '../components/plotlyPlot';
 import ResultStructure from '../components/resultStructure';
 import ReactPlayer from 'react-player';
@@ -17,7 +16,7 @@ import ReactPlayer from 'react-player';
 function ResultsExplorer(props) {
 
 
-    const Viz = useReactiveVar(valueVar)[0]['check'];
+    const Viz = props.data.configValues[0]['check'];
     let mainPlot = '';
     if (!Viz['view_only_particles'] && !Viz['log_res']) {
         mainPlot = 'rms_block'

@@ -1,27 +1,22 @@
 import { TextField, Typography, Button } from '@material-ui/core';
 import React, { useState } from 'react'
 import { useReactiveVar } from '@apollo/client';
-import { valueVar } from '../util/cache';
 import { sections_name } from '../default_value';
 import { configSecName, structSecName, mainSectionName } from '../util/cache';
 import AddIcon from '@material-ui/icons/Add';
 import RemoveIcon from '@material-ui/icons/Remove';
+import { connect } from 'react-redux';
+import { setConfig } from '../redux/action/dataActions';
 
 
-let IncDecField = (props) => {
+let IncDecFieldUnconnect = (props) => {
     const configVar = useReactiveVar(configSecName)
-    const structVar = useReactiveVar(structSecName)
-    const mainVar = useReactiveVar(mainSectionName)
+
     const [name, defaultValue] = props.value;
-    let secName = '';
-    if (mainVar === 'config') {
-        secName = configVar;
-    } else {
-        secName = structVar
-    }
-    const indexSec = sections_name.indexOf(secName);
-    const valVarRes = useReactiveVar(valueVar)[indexSec];
-    const input = props.getValue(valVarRes);
+
+    const indexSec = sections_name.indexOf(configVar);
+
+    const input = props.data.configValues[indexSec][props.cat][props.field];
     const [error, seterror] = useState({})
 
     const handleChange = (event, id) => {
@@ -32,7 +27,7 @@ let IncDecField = (props) => {
             delete newError[id]
             seterror(newError)
         }
-        props.changeValue(parseFloat(event.target.value));
+        props.setConfig(indexSec, props.cat, props.field, parseFloat(event.target.value));
     }
 
     return <div className="container" name={name} style={{ textAlign: 'center' }}>
@@ -48,7 +43,7 @@ let IncDecField = (props) => {
             <div className="col-3">
                 <Button onClick={(event) => {
                     const i = parseFloat(input)
-                    if (i - 1 >= 0) props.changeValue(parseFloat(input) - 1)
+                    if (i - 1 >= 0) props.setConfig(indexSec, props.cat, props.field, parseFloat(input) - 1)
                 }} variant="contained" color="primary">
                     <RemoveIcon />
                 </Button>
@@ -65,7 +60,7 @@ let IncDecField = (props) => {
             </div>
             <div className="col-3">
                 <Button onClick={(event) => {
-                    props.changeValue(parseFloat(input) + 1);
+                    props.setConfig(indexSec, props.cat, props.field, parseFloat(input) + 1);
                 }} variant="contained" color="primary">
                     <AddIcon />
                 </Button>
@@ -73,5 +68,15 @@ let IncDecField = (props) => {
         </div>
     </div>
 }
+
+const mapActiontoProps = {
+    setConfig,
+}
+
+const mapStateToProps = (state) => ({
+    data: state.data,
+});
+
+let IncDecField = connect(mapStateToProps, mapActiontoProps)(IncDecFieldUnconnect)
 
 export default IncDecField;

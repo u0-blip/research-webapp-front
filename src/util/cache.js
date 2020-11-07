@@ -19,8 +19,6 @@ export const configSecName = makeVar('General');
 export const structSecName = makeVar('Geometry');
 export const mainSectionName = makeVar('config');
 
-const default_values_in_store = !!localStorage.getItem('default_config') ? JSON.parse(localStorage.getItem('default_config')) : default_values;
-export const valueVar = makeVar(JSON.parse(JSON.stringify(default_values_in_store)));
 
 export const cache = new InMemoryCache({
     typePolicies: {
@@ -41,12 +39,6 @@ export const cache = new InMemoryCache({
                         return currentSection();
                     }
                 },
-                value: {
-                    read() {
-                        localStorage.setItem('default_config', JSON.stringify(valueVar()))
-                        return valueVar();
-                    }
-                }
             }
         }
     }

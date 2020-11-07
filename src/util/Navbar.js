@@ -14,8 +14,9 @@ export function Navbar(props) {
     const classes = styles();
     let userSection;
     const configVar = useReactiveVar(configSecName)
-    const structVar = useReactiveVar(structSecName)
+
     const mainVar = useReactiveVar(mainSectionName)
+    const structVar = useReactiveVar(structSecName)
 
     const sections_name_config = ['Visualization', 'General', 'Simulation', 'Geometry', 'Source']
     const sections_name_struct = []

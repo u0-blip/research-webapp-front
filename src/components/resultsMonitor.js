@@ -7,7 +7,6 @@ import Box from '@material-ui/core/Box';
 import clsx from 'clsx';
 import { Link } from 'react-router-dom';
 import Axios from 'axios';
-import { valueVar } from '../util/cache';
 import { pics } from '../default_value';
 import Error from '../util/Error';
 import { plotDict, rms } from '../util/cache';
@@ -105,7 +104,7 @@ function ResultsMonitor(props) {
     let progress_data_local = { current: 0, total: 1, percent: 0 };
     const startSim = (e) => {
         e.preventDefault()
-        Axios.post('/longtask/', JSON.stringify(valueVar()))
+        Axios.post('/longtask/', JSON.stringify(props.data.configValues))
             .then(res => {
                 const status_url = res.data.Location;
                 update_progress(status_url)
