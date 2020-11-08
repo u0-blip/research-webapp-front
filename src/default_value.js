@@ -3,12 +3,12 @@ export const pics = ['structure'];
 export const plots = ['eps', 'rms_block', 'rms_xy', 'rms_block_max', 'rms_particle_only', 'rms_particle_only_max', 'rms_block_log', 'rms_particle_only_log']
 export const noPlots = ['rms_xy', 'rms_block_max', 'rms_particle_only_max']
 
-export const optionalField = ['shape', 'particle_area_or_volume', 'x_loc', 'distance', 'fill_factor', 'std', 'rotation', 'num_particles', 'rand_seed', 'num_particles_vor', 'particle_location']
+export const optionalField = ['shape', 'particle_area_or_volume', 'fill_factor', 'std', 'rotation', 'num_particles', 'rand_seed', 'num_particles_vor', 'particle_location']
 export const optionalFieldExist = {
     'checker': ['particle_area_or_volume', 'fill_factor', 'shape'],
-    'shape': ['particle_area_or_volume', 'x_loc', 'distance', 'rotation', 'num_particles', 'shape', 'particle_location'],
+    'shape': ['particle_area_or_volume', 'rotation', 'num_particles', 'shape', 'particle_location'],
     'effective medium': [],
-    'voronoi': ['fill_factor', 'num_particles_vor', 'rand_seed', 'num_particles_vor']
+    'voronoi': ['num_particles_vor', 'rand_seed']
 }
 export const optionalIncDecField = ['num_particles']
 
@@ -24,7 +24,6 @@ export const default_values = [
     {
         'check': {
             'structure': true,
-            'transiant': false,
             'rms': true,
             'view_only_particles': true,
             'log_res': false,
@@ -38,7 +37,6 @@ export const default_values = [
 
         },
         'input': {
-            '3d_plotting_axis': 1,
             'frame_speed': 0.01,
         }
     },
@@ -46,12 +44,6 @@ export const default_values = [
     {
         'check': {
             gen_vor: false,
-            perform_mp_sim: true,
-
-            gen_gmsh: false,
-            process_inp: false,
-            clean_array: false,
-            sim_abq: true,
         },
         'radio': {
             //  'shape_types_dummy': ('cube', ('sphere', 'triangle', 'hexagon', 'cube'))
@@ -92,8 +84,6 @@ export const default_values = [
         },
         'range': {
             'particle_area_or_volume': [1, 2, 1],
-            'x_loc': [0, -3.4, 1],
-            'distance': [1, 3, 1],
             'fill_factor': [0.5, 0.7, 1],
             'std': [0.1, 0.3, 1],
             'rotation': [0, 60, 1]
@@ -131,14 +121,11 @@ export const default_values = [
         'check': {
         },
         'radio': {
-            'mode': ['normal', ['normal', 'gaussian', 'far_field_transform', 'waveguide']],
+            'mode': ['normal', ['normal', 'gaussian']],
         },
         'coord': {
             'size': [0, 8, 0],
             'center': [4, 0, 0],
-            'near_flux_loc': [3.5, 0, 0],
-            'far_flux_loc': [-4.5, 0, 0],
-            'flux_size': [0, 9, 0],
         },
         'range': {
         },
@@ -147,10 +134,7 @@ export const default_values = [
             'tilt_angle': 0,
             'sigma': 2,
             'amp': 100,
-            'flux_nfreq': 100,
             'fwidth': 2,
-            'flux_width': 0.8,
-
         }
     },
 ]
