@@ -22,7 +22,7 @@ import Structure from './pages/stucture';
 import { Provider } from "react-redux";
 import store from "./redux/store";
 
-Axios.defaults.baseURL = 'http://127.0.0.1:8000';
+Axios.defaults.baseURL = 'https://research.tibitzz.com';
 
 const httpLink = createHttpLink({
   uri: Axios.defaults.baseURL + '/graphql/',
@@ -126,4 +126,4 @@ query($id: Int!){
 `;
 
 
-export default App; 
+export default App;
