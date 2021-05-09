@@ -22,7 +22,7 @@ import Structure from './pages/stucture';
 import { Provider } from "react-redux";
 import store from "./redux/store";
 
-Axios.defaults.baseURL = 'https://research.tibitzz.com';
+Axios.defaults.baseURL = 'https://research.tbitzz.com';
 
 const httpLink = createHttpLink({
   uri: Axios.defaults.baseURL + '/graphql/',
